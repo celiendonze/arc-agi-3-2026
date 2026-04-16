@@ -2,20 +2,23 @@
 
 ## Run
 ```bash
-python main.py
+python arc_game_1.py
 ```
 
-## Setup
-```bash
-uv sync
-```
+## Prerequisites
+- **Ollama** must be running at `http://localhost:11434` with model `gemma4:e2b`
+- `uv sync` to install dependencies
+
+## Architecture
+- `arc_game_1.py` - Main entry point (AI agent playing ARC-AGI game)
+- `main.py` - Stub entry point (unused)
+- `src/arc_agi_3_2026/` - Package source
+- `data/images/` - Generated frames (gitignored)
 
 ## Virtual Environment
-`.venv/` is gitignored. Activate it before running:
-- Windows: `.venv\Scripts\activate`
-- Unix: `source .venv/bin/activate`
+`.venv/` is gitignored. Activate with `.venv\Scripts\activate` (Windows) or `source .venv/bin/activate` (Unix)
 
 ## Notes
-- Uses `uv` for dependency management (not pip)
+- Uses `uv` for dependency management
 - Python 3.13 required
-- `uv.lock` is committed (do not ignore)
+- `uv.lock` is committed
