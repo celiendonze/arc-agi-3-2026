@@ -14,6 +14,7 @@ python arc_game_1.py
 - `main.py` - Stub entry point (unused)
 - `src/arc_agi_3_2026/` - Package source
 - `data/images/` - Generated frames (gitignored)
+- `data/thinking/` - Model thinking logs (gitignored)
 
 ## Virtual Environment
 `.venv/` is gitignored. Activate with `.venv\Scripts\activate` (Windows) or `source .venv/bin/activate` (Unix)

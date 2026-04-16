@@ -15,7 +15,9 @@ from pydantic_ai.providers.ollama import OllamaProvider
 HERE = Path(__file__).parent
 DATA_DIR = HERE / "data"
 IMAGES_DIR = DATA_DIR / "images"
+THINKING_DIR = DATA_DIR / "thinking"
 IMAGES_DIR.mkdir(parents=True, exist_ok=True)
+THINKING_DIR.mkdir(parents=True, exist_ok=True)
 
 ollama_model = OpenAIChatModel(
     model_name="gemma4:e2b",
@@ -27,7 +29,11 @@ class GameActionOutput(BaseModel):
     action: int
 
 
-agent = Agent(model=ollama_model, output_type=GameActionOutput)
+agent = Agent(
+    model=ollama_model,
+    output_type=GameActionOutput,
+    model_settings={"thinking": "low"},
+)
 
 
 STEPS = 20
@@ -59,6 +65,19 @@ def matplotlib_renderer(steps: int, frame_data: FrameDataRaw) -> None:
 def save_frame(frame_data: FrameDataRaw, step: int) -> None:
     image_path = IMAGES_DIR / f"frame_{step}.png"
     cv2.imwrite(str(image_path), normalize_frame(frame_data.frame[0]))
+
+
+def save_thinking(result, step: int) -> str:
+    thinking_parts = []
+    for msg in result.all_messages():
+        for part in msg.parts:
+            if hasattr(part, "content") and part.content:
+                thinking_parts.append(str(part.content))
+
+    thinking_text = "\n".join(thinking_parts)
+    thinking_path = THINKING_DIR / f"step_{step}.txt"
+    thinking_path.write_text(thinking_text)
+    return thinking_text
 
 
 logger.info("Creating environment...")
@@ -95,6 +114,9 @@ for step in range(STEPS):
     action = result.output
     agent_actions_history.append(action)
     action_taken = action_space[action.action - 1]
+
+    thinking = save_thinking(result, step=step)
+    logger.info(f"Agent thinking (step {step}):\n{thinking}")
     logger.info(f"Agent decided to take action: {action_taken}")
 
     env.step(action_taken)

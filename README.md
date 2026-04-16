@@ -28,7 +28,7 @@ The agent will:
 1. Launch an ARC-AGI game environment (ls20 task)
 2. For each step, send the current frame to the AI
 3. Execute the action chosen by the AI
-4. Save frames to `data/images/`
+4. Save frames to `data/images/` and thinking logs to `data/thinking/`
 5. Display a grid of all frames at the end
 
 ## Dependencies
