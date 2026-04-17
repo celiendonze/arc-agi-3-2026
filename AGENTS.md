@@ -1,25 +1,39 @@
-# Development
+# ARC-AGI Game AI
+
+## Setup
+
+```bash
+uv sync
+```
+
+Requires Python >=3.13.
+
+## Ollama
+
+Must be running at `http://localhost:11434`. Pull model:
+
+```bash
+ollama pull gemma4:e2b
+```
+
+`arc_game_1.py` and `arc_game_tools.py` both default to `gemma4:e2b`. Both files have commented-out alternatives (`qwen3.6:latest`, `gemma4:26b`).
 
 ## Run
+
 ```bash
 python arc_game_1.py
 ```
 
-## Prerequisites
-- **Ollama** must be running at `http://localhost:11434` with model `gemma4:e2b`
-- `uv sync` to install dependencies
+Main loop: runs 20 steps of ARC-AGI task `ls20`. Each step sends the current frame to the agent, executes the chosen action, saves frame + thinking log.
 
-## Architecture
-- `arc_game_1.py` - Main entry point (AI agent playing ARC-AGI game)
-- `main.py` - Stub entry point (unused)
-- `src/arc_agi_3_2026/` - Package source
-- `data/images/` - Generated frames (gitignored)
-- `data/thinking/` - Model thinking logs (gitignored)
+## Key files
 
-## Virtual Environment
-`.venv/` is gitignored. Activate with `.venv\Scripts\activate` (Windows) or `source .venv/bin/activate` (Unix)
+- `arc_game_1.py` - Active game loop (pydantic-ai Agent, sends frames as PNG images)
+- `arc_game_tools.py` - Variant using tool calls (ASCII frame rendering, `step` tool)
+- `main.py` - Unused stub
+- `src/arc_agi_3_2026/` - Package skeleton (unused)
 
-## Notes
-- Uses `uv` for dependency management
-- Python 3.13 required
-- `uv.lock` is committed
+## Output
+
+- `data/images/` - Per-step frames (gitignored)
+- `data/thinking/` - Per-step model responses (gitignored)
