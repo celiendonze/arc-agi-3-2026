@@ -42,12 +42,18 @@ def normalize_frame(frame: np.ndarray) -> np.ndarray:
 
 
 def frame_to_bytes(frame_data: FrameDataRaw) -> bytes:
-    return cv2.imencode(".png", normalize_frame(frame_data.frame[0]))[1].tobytes()
+    frame = normalize_frame(frame_data.frame[0])
+    frame = cv2.resize(
+        frame, (frame.shape[1] * 4, frame.shape[0] * 4), interpolation=cv2.INTER_NEAREST
+    )
+    return cv2.imencode(".png", frame)[1].tobytes()
 
 
 def save_frame(frame_data: FrameDataRaw, step: int) -> None:
     path = IMAGES_DIR / f"frame_{step}.png"
-    cv2.imwrite(str(path), normalize_frame(frame_data.frame[0]))
+    frame_bytes = frame_to_bytes(frame_data)
+    with open(path, "wb") as f:
+        f.write(frame_bytes)
 
 
 def render_frame_as_text(frame_data: FrameDataRaw) -> str:
@@ -76,12 +82,12 @@ agent = Agent(
     instructions="\n".join(
         [
             "Your task is to interact with the game environment by taking actions and observing the resulting frames.",
-            "Use the provided tools to list available actions, render the current frame as ASCII art, and take steps in the environment.",
-            # "Your goal is to explore the environment and find a way to win the game.",
-            # "Your goal is also to find the rules of the game",
-            # "After taking an action, analyze the resulting frame to inform your next decision.",
-            # "Use the tools multiple times as needed to gather information and progress in the game.",
-            # "Do not stop before experimenting with at least 100 different actions and analyzing the resulting frames.",
+            "Use the provided tools to list available actions, take steps in the environment, and render frames as needed.",
+            "You can also use a tool to read and update your memory to keep track of important information. Use this memory to store any relevant details about the game state or your strategy.",
+            "Things to remember:",
+            "- What the actions do and which ones are useful in different situations.",
+            "- How the environment responds to different actions.",
+            "- Any patterns or important details you notice in the frames.",
         ]
     ),
 )
@@ -142,6 +148,31 @@ def step(action: int) -> ToolReturn:
         return_value="Resulting frame after taking action",
         content=[BinaryContent(data=image_bytes, media_type="image/png")],
     )
+
+
+memory = """
+<start of memory>
+[memory is empty]
+<end of memory>
+"""
+
+
+@agent.tool_plain
+def read_memory() -> str:
+    """Tool to read the agent's memory."""
+    logger.info("Agent is reading memory...")
+    return memory
+
+
+@agent.tool_plain
+def replace_memory(old_memory: str, new_memory: str) -> str:
+    """Tool to replace the agent's memory."""
+    logger.info("Agent is updating memory...")
+    global memory
+    if old_memory not in memory:
+        return "Old memory not found in current memory, please read memory and try again with a valid old memory string."
+    memory = memory.replace(old_memory, new_memory)
+    return "Memory updated successfully"
 
 
 app = agent.to_web()
